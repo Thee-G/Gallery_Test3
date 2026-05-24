@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thee-Gallery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Syne:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0a;
+      --bg-2: #111111;
+      --bg-3: #1a1a1a;
+      --surface: #161616;
+      --border: rgba(255,255,255,0.07);
+      --border-hover: rgba(255,255,255,0.15);
+      --text-primary: #f0ece4;
+      --text-secondary: #8a8680;
+      --text-muted: #4a4845;
+      --accent: #c9b99a;
+      --accent-dim: rgba(201,185,154,0.15);
+      --red: #c0392b;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      overflow-x: hidden;
+      cursor: default;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.4;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.5rem 3rem;
+      background: linear-gradient(to bottom, rgba(10,10,10,0.95) 0%, transparent 100%);
+      backdrop-filter: blur(0px);
+    }
+
+    .nav-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 300;
+      letter-spacing: 0.12em;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .nav-logo span { color: var(--accent); }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text-primary); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 3rem 5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 70% 40%, rgba(201,185,154,0.04) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 60% at 20% 80%, rgba(192,57,43,0.05) 0%, transparent 60%);
+    }
+
+    .hero-line {
+      position: absolute;
+      top: 0;
+      right: 12rem;
+      width: 1px;
+      height: 100%;
+      background: linear-gradient(to bottom, transparent 0%, var(--border) 30%, var(--border) 70%, transparent 100%);
+    }
+
+    .hero-eyebrow {
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(5rem, 12vw, 11rem);
+      font-weight: 300;
+      line-height: 0.9;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      max-width: 900px;
+    }
+
+    .hero-title em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      margin-top: 2rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      max-width: 300px;
+      line-height: 1.8;
+    }
+
+    .hero-scroll {
+      position: absolute;
+      right: 3rem;
+      bottom: 5rem;
+      writing-mode: vertical-rl;
+      font-size: 0.6rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .hero-scroll::before {
+      content: '';
+      display: block;
+      width: 1px;
+      height: 60px;
+      background: var(--text-muted);
+      animation: scrollLine 2s ease-in-out infinite;
+    }
+
+    @keyframes scrollLine {
+      0%, 100% { opacity: 0.3; transform: scaleY(1); }
+      50% { opacity: 1; transform: scaleY(0.6); }
+    }
+
+    /* ── SECTION COMMONS ── */
+    section { padding: 7rem 3rem; }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 2rem;
+      margin-bottom: 4rem;
+    }
+
+    .section-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 300;
+      letter-spacing: 0.02em;
+    }
+
+    .section-title em { font-style: italic; color: var(--accent); }
+
+    .section-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── PHOTOS ── */
+    #photos { background: var(--bg); }
+
+    .photo-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      grid-template-rows: 340px 220px;
+      gap: 3px;
+    }
+
+    .photo-item {
+      background: var(--bg-3);
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .photo-item:first-child {
+      grid-row: 1 / 3;
+    }
+
+    .photo-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: grayscale(20%) contrast(1.05);
+      transition: transform 0.7s cubic-bezier(0.25,0.46,0.45,0.94), filter 0.4s;
+    }
+
+    .photo-item:hover img {
+      transform: scale(1.04);
+      filter: grayscale(0%) contrast(1.0);
+    }
+
+    .photo-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      display: flex;
+      align-items: flex-end;
+      padding: 1.5rem;
+    }
+
+    .photo-item:hover .photo-overlay { opacity: 1; }
+
+    .photo-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+    }
+
+    /* placeholder photo blocks */
+    .photo-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-3);
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .photo-placeholder span {
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .ph-icon {
+      width: 28px;
+      height: 28px;
+      opacity: 0.2;
+    }
+
+    /* ── PAINTINGS ── */
+    #paintings { background: var(--bg-2); }
+
+    .paintings-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+    }
+
+    .painting-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      transition: border-color 0.3s, transform 0.3s;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .painting-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-4px);
+    }
+
+    .painting-thumb {
+      aspect-ratio: 3/4;
+      background: var(--bg-3);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .painting-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s;
+    }
+
+    .painting-card:hover .painting-thumb img { transform: scale(1.06); }
+
+    .painting-thumb-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.12;
+      font-size: 2rem;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      color: var(--text-primary);
+    }
+
+    .painting-info { padding: 1rem 1.2rem 1.2rem; }
+
+    .painting-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      font-weight: 400;
+      font-style: italic;
+      color: var(--text-primary);
+      margin-bottom: 0.3rem;
+    }
+
+    .painting-meta {
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    /* ── WRITINGS ── */
+    #writings { background: var(--bg); }
+
+    .writings-layout {
+      display: grid;
+      grid-template-columns: 1fr 2px 2fr;
+      gap: 4rem;
+      align-items: start;
+    }
+
+    .writings-sidebar {
+      position: sticky;
+      top: 8rem;
+    }
+
+    .writings-intro {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      font-style: italic;
+      color: var(--text-secondary);
+      line-height: 1.9;
+      margin-bottom: 2rem;
+    }
+
+    .writings-divider { background: var(--border); }
+
+    .writings-list { display: flex; flex-direction: column; }
+
+    .writing-item {
+      display: flex;
+      gap: 2rem;
+      padding: 2rem 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.2s;
+      align-items: flex-start;
+    }
+
+    .writing-item:first-child { border-top: 1px solid var(--border); }
+
+    .writing-item:hover .writing-title { color: var(--accent); }
+
+    .writing-date {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      min-width: 60px;
+      padding-top: 0.3rem;
+    }
+
+    .writing-body { flex: 1; }
+
+    .writing-type {
+      display: inline-block;
+      font-size: 0.55rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-dim);
+      padding: 0.2rem 0.6rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .writing-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem;
+      font-weight: 400;
+      line-height: 1.3;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+      transition: color 0.2s;
+    }
+
+    .writing-excerpt {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    /* ── SPOTIFY ── */
+    #spotify { background: var(--bg-2); padding: 5rem 3rem; }
+
+    .spotify-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    .spotify-text {}
+
+    .spotify-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #1DB954;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .spotify-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #1DB954;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    .spotify-heading {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 300;
+      line-height: 1.15;
+      margin-bottom: 1.2rem;
+    }
+
+    .spotify-desc {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      margin-bottom: 2rem;
+    }
+
+    .spotify-embed-wrap {
+      border: 1px solid var(--border);
+      overflow: hidden;
+      border-radius: 12px;
+    }
+
+    /* Replace the src with your actual Spotify embed URL */
+    .spotify-embed-wrap iframe {
+      display: block;
+      width: 100%;
+      border: none;
+    }
+
+    .spotify-placeholder {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .spotify-placeholder-top {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .spotify-album-ph {
+      width: 56px;
+      height: 56px;
+      background: var(--bg-3);
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .spotify-info-ph { flex: 1; display: flex; flex-direction: column; gap: 0.4rem; }
+
+    .spotify-bar {
+      height: 10px;
+      background: var(--bg-3);
+      border-radius: 2px;
+    }
+
+    .spotify-bar.short { width: 55%; }
+
+    .spotify-progress {
+      height: 3px;
+      background: var(--bg-3);
+      border-radius: 2px;
+      position: relative;
+    }
+
+    .spotify-progress::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 40%;
+      background: #1DB954;
+      border-radius: 2px;
+    }
+
+    .spotify-note {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-align: center;
+      letter-spacing: 0.1em;
+    }
+
+    /* ── CONTACT ── */
+    #contact { background: var(--bg); padding: 7rem 3rem 5rem; }
+
+    .contact-top {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      margin-bottom: 5rem;
+    }
+
+    .contact-heading {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 5vw, 4rem);
+      font-weight: 300;
+      line-height: 1.1;
+    }
+
+    .contact-heading em { font-style: italic; color: var(--accent); }
+
+    .contact-form { display: flex; flex-direction: column; gap: 1.5rem; }
+
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+
+    .form-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .form-input, .form-textarea {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-primary);
+      font-family: 'Syne', sans-serif;
+      font-size: 0.9rem;
+      padding: 0.6rem 0;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+
+    .form-input:focus, .form-textarea:focus { border-bottom-color: var(--accent); }
+
+    .form-textarea { resize: none; height: 80px; }
+
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--text-muted); }
+
+    .btn-submit {
+      align-self: flex-start;
+      background: transparent;
+      border: 1px solid var(--border-hover);
+      color: var(--text-primary);
+      font-family: 'Syne', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 0.9rem 2rem;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+    }
+
+    .btn-submit:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--bg);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      font-weight: 300;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+
+    .socials {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+    }
+
+    .socials a {
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .socials a:hover { color: var(--text-primary); }
+
+    .footer-copy {
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+    }
+
+    /* ── DIVIDER ── */
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--border), transparent);
+      margin: 0 3rem;
+    }
+
+    /* ── ANIMATIONS ── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      nav { padding: 1.2rem 1.5rem; }
+      .nav-links { display: none; }
+      section { padding: 5rem 1.5rem; }
+      .hero { padding: 0 1.5rem 4rem; }
+      .photo-grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
+      .photo-item:first-child { grid-row: auto; }
+      .paintings-grid { grid-template-columns: repeat(2, 1fr); }
+      .writings-layout { grid-template-columns: 1fr; }
+      .writings-divider { display: none; }
+      .writings-sidebar { position: static; }
+      .spotify-layout { grid-template-columns: 1fr; }
+      .contact-top { grid-template-columns: 1fr; gap: 3rem; }
+      footer { flex-direction: column; gap: 1.5rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-logo">Thee<span>—</span>Gallery</a>
+    <ul class="nav-links">
+      <li><a href="#photos">Photos</a></li>
+      <li><a href="#paintings">Paintings</a></li>
+      <li><a href="#writings">Writings</a></li>
+      <li><a href="#spotify">Sounds</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-line"></div>
+    <p class="hero-eyebrow">Est. 2024 — A Personal Archive</p>
+    <h1 class="hero-title">Thee<br><em>Gallery</em></h1>
+    <p class="hero-sub">Photography · Paintings · Illustrations · Writing · Sound</p>
+    <div class="hero-scroll">Scroll</div>
+  </section>
+
+  <!-- PHOTOS -->
+  <section id="photos">
+    <div class="section-header fade-up">
+      <span class="section-num">01</span>
+      <h2 class="section-title"><em>Photos</em></h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="photo-grid fade-up">
+
+      <!-- Replace src values with your actual image paths -->
+      <div class="photo-item">
+        <!-- <img src="images/photos/photo-1.jpg" alt="Photo title" /> -->
+        <div class="photo-placeholder">
+          <svg class="ph-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>
+          </svg>
+          <span>Your Photo</span>
+        </div>
+        <div class="photo-overlay"><span class="photo-label">Featured</span></div>
+      </div>
+
+      <div class="photo-item">
+        <!-- <img src="images/photos/photo-2.jpg" alt="Photo title" /> -->
+        <div class="photo-placeholder">
+          <svg class="ph-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          <span>Your Photo</span>
+        </div>
+        <div class="photo-overlay"><span class="photo-label">Urban</span></div>
+      </div>
+
+      <div class="photo-item">
+        <!-- <img src="images/photos/photo-3.jpg" alt="Photo title" /> -->
+        <div class="photo-placeholder">
+          <svg class="ph-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          <span>Your Photo</span>
+        </div>
+        <div class="photo-overlay"><span class="photo-label">Portrait</span></div>
+      </div>
+
+      <div class="photo-item">
+        <!-- <img src="images/photos/photo-4.jpg" alt="Photo title" /> -->
+        <div class="photo-placeholder">
+          <svg class="ph-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          <span>Your Photo</span>
+        </div>
+        <div class="photo-overlay"><span class="photo-label">Still Life</span></div>
+      </div>
+
+      <div class="photo-item">
+        <!-- <img src="images/photos/photo-5.jpg" alt="Photo title" /> -->
+        <div class="photo-placeholder">
+          <svg class="ph-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          <span>Your Photo</span>
+        </div>
+        <div class="photo-overlay"><span class="photo-label">Landscape</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- PAINTINGS -->
+  <section id="paintings">
+    <div class="section-header fade-up">
+      <span class="section-num">02</span>
+      <h2 class="section-title">Paintings &amp; <em>Illustrations</em></h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="paintings-grid fade-up">
+
+      <!-- Add / remove cards as needed. Replace src with your image paths. -->
+      <div class="painting-card">
+        <div class="painting-thumb">
+          <!-- <img src="images/paintings/painting-1.jpg" alt="Painting title" /> -->
+          <div class="painting-thumb-placeholder">I</div>
+        </div>
+        <div class="painting-info">
+          <p class="painting-title">Untitled No. 1</p>
+          <p class="painting-meta">Oil on Canvas · 2024</p>
+        </div>
+      </div>
+
+      <div class="painting-card">
+        <div class="painting-thumb">
+          <!-- <img src="images/paintings/painting-2.jpg" alt="Painting title" /> -->
+          <div class="painting-thumb-placeholder">II</div>
+        </div>
+        <div class="painting-info">
+          <p class="painting-title">Untitled No. 2</p>
+          <p class="painting-meta">Acrylic · 2024</p>
+        </div>
+      </div>
+
+      <div class="painting-card">
+        <div class="painting-thumb">
+          <!-- <img src="images/paintings/painting-3.jpg" alt="Painting title" /> -->
+          <div class="painting-thumb-placeholder">III</div>
+        </div>
+        <div class="painting-info">
+          <p class="painting-title">Untitled No. 3</p>
+          <p class="painting-meta">Digital · 2024</p>
+        </div>
+      </div>
+
+      <div class="painting-card">
+        <div class="painting-thumb">
+          <!-- <img src="images/paintings/painting-4.jpg" alt="Painting title" /> -->
+          <div class="painting-thumb-placeholder">IV</div>
+        </div>
+        <div class="painting-info">
+          <p class="painting-title">Untitled No. 4</p>
+          <p class="painting-meta">Illustration · 2024</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- WRITINGS -->
+  <section id="writings">
+    <div class="section-header fade-up">
+      <span class="section-num">03</span>
+      <h2 class="section-title">Things <em>I Wrote</em></h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="writings-layout fade-up">
+
+      <div class="writings-sidebar">
+        <p class="writings-intro">"Words as artefacts — thoughts given a body and a date."</p>
+        <p style="font-size:0.75rem; color:var(--text-muted); line-height:1.8;">Essays, fiction, poetry, notes — all of it lives here.</p>
+      </div>
+
+      <div class="writings-divider"></div>
+
+      <div class="writings-list">
+        <!-- Add / remove writing entries. Link href to your files or pages. -->
+        <a href="#" class="writing-item" style="text-decoration:none;">
+          <span class="writing-date">Jan 2025</span>
+          <div class="writing-body">
+            <span class="writing-type">Essay</span>
+            <p class="writing-title">Your Essay Title Goes Here</p>
+            <p class="writing-excerpt">A short excerpt or description of the piece. Replace this with a line or two that draws the reader in.</p>
+          </div>
+        </a>
+        <a href="#" class="writing-item" style="text-decoration:none;">
+          <span class="writing-date">Nov 2024</span>
+          <div class="writing-body">
+            <span class="writing-type">Fiction</span>
+            <p class="writing-title">Your Story Title Goes Here</p>
+            <p class="writing-excerpt">An excerpt that sets the mood — the opening line, a fragment of feeling, something that lingers.</p>
+          </div>
+        </a>
+        <a href="#" class="writing-item" style="text-decoration:none;">
+          <span class="writing-date">Oct 2024</span>
+          <div class="writing-body">
+            <span class="writing-type">Poetry</span>
+            <p class="writing-title">Your Poem Title Goes Here</p>
+            <p class="writing-excerpt">A taste of the verse — just enough to make them want to read the whole thing.</p>
+          </div>
+        </a>
+        <a href="#" class="writing-item" style="text-decoration:none;">
+          <span class="writing-date">Sep 2024</span>
+          <div class="writing-body">
+            <span class="writing-type">Notes</span>
+            <p class="writing-title">Your Note Title Goes Here</p>
+            <p class="writing-excerpt">Something shorter, rawer, more personal. A thought that didn't fit anywhere else.</p>
+          </div>
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- SPOTIFY -->
+  <section id="spotify">
+    <div class="spotify-layout fade-up">
+      <div class="spotify-text">
+        <div class="spotify-label">
+          <span class="spotify-dot"></span>
+          Now Playing
+        </div>
+        <h2 class="spotify-heading">The sounds behind<br>the work.</h2>
+        <p class="spotify-desc">
+          Music is inseparable from the creative process.
+          Here's what's been playing while I make things.
+        </p>
+        <!--
+          HOW TO CONNECT YOUR SPOTIFY:
+          1. Go to the Spotify track, album, or playlist you want to embed.
+          2. Click the three dots → Share → Embed track/playlist.
+          3. Copy the iframe snippet Spotify gives you.
+          4. Paste it in place of the placeholder below, inside .spotify-embed-wrap
+        -->
+      </div>
+
+      <div>
+        <!-- REPLACE THIS BLOCK with your Spotify embed iframe -->
+        <div class="spotify-placeholder">
+          <div class="spotify-placeholder-top">
+            <div class="spotify-album-ph"></div>
+            <div class="spotify-info-ph">
+              <div class="spotify-bar"></div>
+              <div class="spotify-bar short"></div>
+            </div>
+          </div>
+          <div class="spotify-progress"></div>
+          <p class="spotify-note">
+            Paste your Spotify embed iframe here.<br>
+            Share → Embed on any track, album, or playlist.
+          </p>
+        </div>
+        <!-- Example of what the embed looks like (uncomment and fill in your URI):
+        <div class="spotify-embed-wrap">
+          <iframe
+            src="https://open.spotify.com/embed/playlist/YOUR_PLAYLIST_ID?utm_source=generator&theme=0"
+            width="100%"
+            height="352"
+            frameborder="0"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy">
+          </iframe>
+        </div>
+        -->
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="contact-top fade-up">
+      <div>
+        <h2 class="contact-heading">Let's be<br><em>in touch.</em></h2>
+        <p style="font-size:0.8rem; color:var(--text-secondary); line-height:1.9; margin-top:1.5rem; max-width:280px;">
+          For commissions, collaborations, questions, or just to say hello.
+        </p>
+      </div>
+      <form class="contact-form" onsubmit="return false;">
+        <div class="form-group">
+          <label class="form-label" for="name">Name</label>
+          <input class="form-input" id="name" type="text" placeholder="Your name" autocomplete="off" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="email">Email</label>
+          <input class="form-input" id="email" type="email" placeholder="your@email.com" autocomplete="off" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="message">Message</label>
+          <textarea class="form-textarea" id="message" placeholder="What's on your mind?"></textarea>
+        </div>
+        <button class="btn-submit" type="submit">Send Message →</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <span class="footer-logo">Thee—Gallery</span>
+    <ul class="socials">
+      <!-- Replace # with your actual profile URLs -->
+      <li><a href="#" target="_blank" rel="noopener">Instagram</a></li>
+      <li><a href="#" target="_blank" rel="noopener">X / Twitter</a></li>
+      <li><a href="#" target="_blank" rel="noopener">Tumblr</a></li>
+      <li><a href="#" target="_blank" rel="noopener">Behance</a></li>
+      <li><a href="mailto:your@email.com">Email</a></li>
+    </ul>
+    <span class="footer-copy">&copy; 2025 Thee-Gallery</span>
+  </footer>
+
+  <script>
+    // Fade-up on scroll
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
